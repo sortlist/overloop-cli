@@ -1,6 +1,6 @@
 # Overloop CLI
 
-npm License: MIT
+[![npm version](https://img.shields.io/npm/v/overloop-cli.svg)](https://www.npmjs.com/package/overloop-cli) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Sales automation CLI for developers and AI agents** — Manage prospects, campaigns, sourcings, and more from the terminal.
 
