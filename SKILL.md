@@ -1,3 +1,8 @@
+---
+name: overloop-cli
+description: Overloop CLI skill — manage prospects, campaigns, sourcings, and outreach via the Overloop API v2 from the terminal.
+---
+
 # Overloop CLI Skill
 
 Overloop is an AI-powered sales automation platform for managing prospects, campaigns, and outreach. This CLI lets you manage all resources from the terminal via the Overloop API v2.
