@@ -1,0 +1,58 @@
+{
+  "name": "overloop-cli",
+  "version": "1.0.0",
+  "description": "Overloop CLI - Command line interface for the Overloop sales automation API v2. Manage prospects, campaigns, sourcings, and more from the terminal or AI agents.",
+  "main": "dist/index.js",
+  "bin": {
+    "overloop": "dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "start": "node ./dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SKILL.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "overloop",
+    "cli",
+    "sales",
+    "automation",
+    "outreach",
+    "prospects",
+    "campaigns",
+    "email",
+    "linkedin",
+    "ai-agent",
+    "claude-code",
+    "command-line"
+  ],
+  "author": "Sortlist",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sortlist/overloop-cli.git"
+  },
+  "homepage": "https://github.com/sortlist/overloop-cli#readme",
+  "bugs": {
+    "url": "https://github.com/sortlist/overloop-cli/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/yargs": "^17.0.32",
+    "tsup": "^8.5.1",
+    "typescript": "^5.3.3"
+  }
+}
