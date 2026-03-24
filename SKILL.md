@@ -120,8 +120,8 @@ overloop step-types:list     # List all available step types
 ```bash
 overloop sourcings:list
 overloop sourcings:get <id>
-overloop sourcings:create --name "Sales Belgium" --search-criteria '{"keywords":"sales","locations":["Belgium"],"company_size":["1-10"]}'
-overloop sourcings:create --data '{"name":"DevOps EU","search_criteria":{"keywords":"devops","locations":["France","Germany"]},"sourcing_limit":100}'
+overloop sourcings:create --name "Sales Belgium" --search-criteria '{"job_titles":["sales"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"size":["1-10 employees"]}'
+overloop sourcings:create --data '{"name":"DevOps EU","search_criteria":{"job_titles":["devops"],"locations":[{"id":75,"name":"France","type":"Country"},{"id":56,"name":"Germany","type":"Country"}]},"sourcing_limit":100}'
 overloop sourcings:update <id> --name "Updated" --sourcing-limit 200
 overloop sourcings:delete <id>
 overloop sourcings:start <id>
@@ -130,6 +130,8 @@ overloop sourcings:clone <id>
 ```
 
 ### Sourcing Search Options
+
+**Important:** `locations` and `industries` must be objects (not plain strings). Use `search-options` to find valid values with their IDs.
 
 Discover available values for sourcing search criteria fields:
 
@@ -210,11 +212,12 @@ overloop campaigns:update <campaign_id> --status on
 ### Source prospects and enroll
 
 ```bash
-# Check search options
+# Find location IDs first
 overloop sourcings:search-options --field locations --q "Belgium"
+# Returns: [{"id": 22, "name": "Belgium", "type": "Country"}, ...]
 
-# Create sourcing
-overloop sourcings:create --name "Belgian CTOs" --search-criteria '{"keywords":"CTO","locations":["Belgium"],"company_size":["11-50","51-200"]}'
+# Create sourcing with object-format locations
+overloop sourcings:create --name "Belgian CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"size":["11-50 employees","51-200 employees"]}'
 
 # Start it
 overloop sourcings:start <id>
