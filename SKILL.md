@@ -121,11 +121,14 @@ overloop step-types:list     # List all available step types
 
 ### Sourcings
 
+**Required fields for create:** `--name`, `--search-criteria`, `--sourcing-limit` (max prospects to source).
+
+**Naming:** Use only ASCII characters in names — avoid em dashes (—), curly quotes, or other special Unicode characters that can break shell escaping.
+
 ```bash
 overloop sourcings:list
 overloop sourcings:get <id>
-overloop sourcings:create --name "Sales Belgium" --search-criteria '{"job_titles":["sales"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"size":["1-10 employees"]}'
-overloop sourcings:create --data '{"name":"DevOps EU","search_criteria":{"job_titles":["devops"],"locations":[{"id":75,"name":"France","type":"Country"},{"id":56,"name":"Germany","type":"Country"}]},"sourcing_limit":100}'
+overloop sourcings:create --name "Sales Belgium" --sourcing-limit 100 --search-criteria '{"job_titles":["sales"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["1-10 employees"]}'
 overloop sourcings:update <id> --name "Updated" --sourcing-limit 200
 overloop sourcings:delete <id>
 overloop sourcings:start <id>
@@ -234,20 +237,7 @@ Wrong:   "Information Technology and Services"    ← LinkedIn name, matches not
 Wrong:   {"name": "Information Technology"}       ← missing id, rejected
 ```
 
-Common LinkedIn → API name mappings:
-
-| LinkedIn name | API name | ID |
-|---|---|---|
-| Information Technology and Services | Information Technology | 575 |
-| Financial Services | Accounting & Financial Services | 541 |
-| Management Consulting | Business Consulting | 552 |
-| Computer Software | Software Development | 4 |
-| Internet | Internet & Web Services | 577 |
-| Marketing and Advertising | Marketing & Advertising | 1 |
-| Telecommunications | Telecommunications | 614 |
-| Banking | Banking & Lending | 547 |
-
-Always look up industries:
+**Important:** Industry names in the API differ from LinkedIn names (e.g. LinkedIn's "Information Technology and Services" is "Information Technology" in the API). Never guess — always look up the correct name and ID first:
 
 ```bash
 overloop sourcings:search-options --field industries --q "Information"
