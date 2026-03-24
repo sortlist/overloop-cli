@@ -91,8 +91,11 @@ overloop lists:delete <id>
 overloop campaigns:list [--filter '{"status":"on"}']
 overloop campaigns:get <id> [--expand steps,sourcing]
 overloop campaigns:create --name "Q1 Outreach" --timezone "Etc/UTC"
+overloop campaigns:create --name "Q1" --auto-enroll --sourcing-id <id>   # auto-enroll sourced prospects
 overloop campaigns:create --data '{"name":"Q1 Outreach","steps":[{"type":"delay","config":{"days_delay":5}}]}'
 overloop campaigns:update <id> --status on
+overloop campaigns:update <id> --auto-enroll       # enable auto-enrollment
+overloop campaigns:update <id> --no-auto-enroll    # switch back to manual
 overloop campaigns:delete <id>
 ```
 

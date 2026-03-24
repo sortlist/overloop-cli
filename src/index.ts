@@ -115,13 +115,19 @@ yargs(hideBin(process.argv))
       .option('timezone', { describe: 'Timezone', type: 'string' })
       .option('sender-id', { describe: 'Sender user ID', type: 'string' })
       .option('sourcing-id', { describe: 'Link an existing sourcing by ID', type: 'string' })
+      .option('auto-enroll', { describe: 'Enable automatic enrollment', type: 'boolean' })
+      .option('auto-reenroll', { describe: 'Enable automatic re-enrollment', type: 'boolean' })
       .option('steps', { describe: 'Inline steps as JSON array', type: 'string' }),
     createCampaign as any)
   .command('campaigns:update <id>', 'Update a campaign', (y: Argv) =>
     dataOption(y.positional('id', { describe: 'Campaign ID', type: 'string' }))
       .option('name', { describe: 'Campaign name', type: 'string' })
       .option('status', { describe: 'Campaign status (on/off)', type: 'string' })
-      .option('sourcing-id', { describe: 'Link an existing sourcing by ID', type: 'string' }),
+      .option('sourcing-id', { describe: 'Link an existing sourcing by ID', type: 'string' })
+      .option('auto-enroll', { describe: 'Enable automatic enrollment', type: 'boolean' })
+      .option('no-auto-enroll', { describe: 'Disable automatic enrollment', type: 'boolean' })
+      .option('auto-reenroll', { describe: 'Enable automatic re-enrollment', type: 'boolean' })
+      .option('no-auto-reenroll', { describe: 'Disable automatic re-enrollment', type: 'boolean' }),
     updateCampaign as any)
   .command('campaigns:delete <id>', 'Delete a campaign', (y: Argv) =>
     y.positional('id', { describe: 'Campaign ID', type: 'string' }),
