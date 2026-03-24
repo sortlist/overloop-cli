@@ -109,6 +109,7 @@ overloop enrollments:list --campaign <id>
 overloop enrollments:get <enrollment_id> --campaign <id>
 overloop enrollments:create --campaign <id> --prospect <prospect_id>
 overloop enrollments:create --campaign <id> --prospect <prospect_id> --reenroll --start-at "2026-04-01T09:00:00Z"
+overloop enrollments:bulk --campaign <id> --prospects "id1,id2,id3"       # bulk enroll up to 100
 overloop enrollments:delete <enrollment_id> --campaign <id>
 ```
 

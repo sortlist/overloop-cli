@@ -116,6 +116,7 @@ overloop enrollments:list --campaign <id>
 overloop enrollments:get <enrollment_id> --campaign <id>
 overloop enrollments:create --campaign <id> --prospect <prospect_id>
 overloop enrollments:create --campaign <id> --prospect <prospect_id> --reenroll
+overloop enrollments:bulk --campaign <id> --prospects "id1,id2,id3"     # bulk enroll up to 100
 overloop enrollments:delete <enrollment_id> --campaign <id>
 ```
 

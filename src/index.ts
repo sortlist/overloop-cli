@@ -8,7 +8,7 @@ import { listOrganizations, getOrganization, createOrganization, updateOrganizat
 import { listLists, getList, createList, updateList, deleteList } from './commands/lists';
 import { listCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign } from './commands/campaigns';
 import { listSteps, getStep, createStep, updateStep, deleteStep } from './commands/steps';
-import { listEnrollments, getEnrollment, createEnrollment, deleteEnrollment } from './commands/enrollments';
+import { listEnrollments, getEnrollment, createEnrollment, bulkCreateEnrollments, deleteEnrollment } from './commands/enrollments';
 import { listStepTypes } from './commands/step-types';
 import { listSourcings, getSourcing, createSourcing, updateSourcing, deleteSourcing, startSourcing, pauseSourcing, cloneSourcing, estimateSourcing, searchOptions } from './commands/sourcings';
 import { listConversations, getConversation, updateConversation, archiveConversation, unarchiveConversation, assignConversation } from './commands/conversations';
@@ -181,6 +181,13 @@ yargs(hideBin(process.argv))
       .option('reenroll', { describe: 'Re-enroll if already enrolled', type: 'boolean' })
       .option('start-at', { describe: 'Schedule enrollment (ISO 8601)', type: 'string' }),
     createEnrollment as any)
+  .command('enrollments:bulk', 'Bulk enroll prospects into a campaign', (y: Argv) =>
+    campaignOption(y)
+      .option('prospects', { describe: 'Comma-separated prospect IDs', type: 'string', demandOption: true })
+      .option('step-id', { describe: 'Start at specific step ID', type: 'string' })
+      .option('reenroll', { describe: 'Re-enroll if already enrolled', type: 'boolean' })
+      .option('start-at', { describe: 'Schedule enrollment (ISO 8601)', type: 'string' }),
+    bulkCreateEnrollments as any)
   .command('enrollments:delete <id>', 'Disenroll a prospect from a campaign', (y: Argv) =>
     campaignOption(y.positional('id', { describe: 'Enrollment ID', type: 'string' })),
     deleteEnrollment as any)

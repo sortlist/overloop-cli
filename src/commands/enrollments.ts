@@ -65,6 +65,34 @@ export async function createEnrollment(args: { campaign: string; prospect: strin
   }
 }
 
+export async function bulkCreateEnrollments(args: { campaign: string; prospects: string; 'step-id'?: string; reenroll?: boolean; 'start-at'?: string }) {
+  const api = new OverloopAPI(getConfig());
+
+  if (!args.prospects) {
+    console.error('--prospects is required (comma-separated IDs).');
+    process.exit(1);
+  }
+
+  const prospectIds = args.prospects.split(',').map((id) => id.trim()).filter(Boolean);
+  if (prospectIds.length === 0) {
+    console.error('No prospect IDs provided.');
+    process.exit(1);
+  }
+
+  const body: Record<string, any> = { prospect_ids: prospectIds };
+  if (args['step-id']) body.step_id = args['step-id'];
+  if (args.reenroll !== undefined) body.reenroll = args.reenroll;
+  if (args['start-at']) body.start_at = args['start-at'];
+
+  try {
+    const result = await api.bulkCreateEnrollments(args.campaign, body);
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error: any) {
+    console.error('Failed to bulk enroll:', error.message);
+    process.exit(1);
+  }
+}
+
 export async function deleteEnrollment(args: { campaign: string; id: string }) {
   const api = new OverloopAPI(getConfig());
 

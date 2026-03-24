@@ -186,6 +186,10 @@ export class OverloopAPI {
     return this.request(`/campaigns/${campaignId}/enrollments/${id}`, { method: 'DELETE' });
   }
 
+  async bulkCreateEnrollments(campaignId: string, data: Record<string, any>) {
+    return this.request(`/campaigns/${campaignId}/enrollments/bulk`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
   // -- Step Types --
 
   async listStepTypes() {
