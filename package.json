@@ -1,6 +1,6 @@
 {
   "name": "overloop-cli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Overloop CLI - Command line interface for the Overloop sales automation API v2. Manage prospects, campaigns, sourcings, and more from the terminal or AI agents.",
   "main": "dist/index.js",
   "bin": {
