@@ -114,12 +114,14 @@ yargs(hideBin(process.argv))
       .option('name', { describe: 'Campaign name', type: 'string' })
       .option('timezone', { describe: 'Timezone', type: 'string' })
       .option('sender-id', { describe: 'Sender user ID', type: 'string' })
+      .option('sourcing-id', { describe: 'Link an existing sourcing by ID', type: 'string' })
       .option('steps', { describe: 'Inline steps as JSON array', type: 'string' }),
     createCampaign as any)
   .command('campaigns:update <id>', 'Update a campaign', (y: Argv) =>
     dataOption(y.positional('id', { describe: 'Campaign ID', type: 'string' }))
       .option('name', { describe: 'Campaign name', type: 'string' })
-      .option('status', { describe: 'Campaign status (on/off)', type: 'string' }),
+      .option('status', { describe: 'Campaign status (on/off)', type: 'string' })
+      .option('sourcing-id', { describe: 'Link an existing sourcing by ID', type: 'string' }),
     updateCampaign as any)
   .command('campaigns:delete <id>', 'Delete a campaign', (y: Argv) =>
     y.positional('id', { describe: 'Campaign ID', type: 'string' }),
