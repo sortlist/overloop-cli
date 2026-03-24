@@ -129,6 +129,17 @@ overloop sourcings:pause <id>
 overloop sourcings:clone <id>
 ```
 
+### Estimate Prospect Match Count
+
+Preview how many prospects match search criteria **before** creating a sourcing (no credits consumed):
+
+```bash
+overloop sourcings:estimate --search-criteria '{"job_titles":["CEO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["1-10 employees"]}'
+# Returns: { estimated_count: 2450, estimated_count_after_rejection: 1837, preview: [...] }
+```
+
+Use this to validate criteria and avoid wasted iterations. The `preview` array contains up to 5 sample prospect profiles.
+
 ### Sourcing Search Options
 
 **Important:** `locations` and `industries` must be objects (not plain strings). Use `search-options` to find valid values with their IDs.
@@ -216,8 +227,12 @@ overloop campaigns:update <campaign_id> --status on
 overloop sourcings:search-options --field locations --q "Belgium"
 # Returns: [{"id": 22, "name": "Belgium", "type": "Country"}, ...]
 
+# Estimate before creating (no credits used)
+overloop sourcings:estimate --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["11-50 employees","51-200 employees"]}'
+# Returns: { estimated_count: 1200, ... preview: [...] }
+
 # Create sourcing with object-format locations
-overloop sourcings:create --name "Belgian CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"size":["11-50 employees","51-200 employees"]}'
+overloop sourcings:create --name "Belgian CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["11-50 employees","51-200 employees"]}'
 
 # Start it
 overloop sourcings:start <id>

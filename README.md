@@ -133,6 +133,7 @@ overloop sourcings:delete <id>
 overloop sourcings:start <id>
 overloop sourcings:pause <id>
 overloop sourcings:clone <id>
+overloop sourcings:estimate --search-criteria '{"job_titles":["CEO"]}'   # Preview match count
 overloop sourcings:search-options                          # Get all available search criteria
 overloop sourcings:search-options --field locations --q "Bel"   # Search specific field options
 ```
@@ -226,10 +227,13 @@ overloop campaigns:update <id> --status on
 # 1. Check available search options
 overloop sourcings:search-options --field locations --q "Belgium"
 
-# 2. Create a sourcing
-overloop sourcings:create --name "Belgian Sales" --search-criteria '{"keywords":"sales","locations":["Belgium"],"company_size":["1-10"]}'
+# 2. Estimate match count before creating (no credits used)
+overloop sourcings:estimate --search-criteria '{"job_titles":["Sales"],"locations":[{"id":22,"name":"Belgium","type":"Country"}]}'
 
-# 3. Start sourcing
+# 3. Create a sourcing
+overloop sourcings:create --name "Belgian Sales" --search-criteria '{"job_titles":["Sales"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["1-10 employees"]}'
+
+# 4. Start sourcing
 overloop sourcings:start <id>
 ```
 

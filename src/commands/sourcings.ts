@@ -167,6 +167,31 @@ export async function cloneSourcing(args: { id: string }) {
   }
 }
 
+export async function estimateSourcing(args: { 'search-criteria': string }) {
+  const api = new OverloopAPI(getConfig());
+
+  if (!args['search-criteria']) {
+    console.error('--search-criteria is required.');
+    process.exit(1);
+  }
+
+  let searchCriteria: Record<string, any>;
+  try {
+    searchCriteria = JSON.parse(args['search-criteria']);
+  } catch {
+    console.error('Failed to parse --search-criteria JSON:', args['search-criteria']);
+    process.exit(1);
+  }
+
+  try {
+    const result = await api.estimateSourcing({ search_criteria: searchCriteria });
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error: any) {
+    console.error('Failed to estimate sourcing:', error.message);
+    process.exit(1);
+  }
+}
+
 export async function searchOptions(args: { field?: string; q?: string }) {
   const api = new OverloopAPI(getConfig());
 

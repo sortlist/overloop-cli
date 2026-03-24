@@ -10,7 +10,7 @@ import { listCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampa
 import { listSteps, getStep, createStep, updateStep, deleteStep } from './commands/steps';
 import { listEnrollments, getEnrollment, createEnrollment, deleteEnrollment } from './commands/enrollments';
 import { listStepTypes } from './commands/step-types';
-import { listSourcings, getSourcing, createSourcing, updateSourcing, deleteSourcing, startSourcing, pauseSourcing, cloneSourcing, searchOptions } from './commands/sourcings';
+import { listSourcings, getSourcing, createSourcing, updateSourcing, deleteSourcing, startSourcing, pauseSourcing, cloneSourcing, estimateSourcing, searchOptions } from './commands/sourcings';
 import { listConversations, getConversation, updateConversation, archiveConversation, unarchiveConversation, assignConversation } from './commands/conversations';
 import { getAccount, getMe } from './commands/account';
 import { listUsers, getUser } from './commands/users';
@@ -212,6 +212,9 @@ yargs(hideBin(process.argv))
   .command('sourcings:clone <id>', 'Clone a sourcing', (y: Argv) =>
     y.positional('id', { describe: 'Sourcing ID', type: 'string' }),
     cloneSourcing as any)
+  .command('sourcings:estimate', 'Estimate prospect match count without creating a sourcing', (y: Argv) =>
+    y.option('search-criteria', { describe: 'Search criteria as JSON string', type: 'string', demandOption: true }),
+    estimateSourcing as any)
   .command('sourcings:search-options', 'Get available search criteria options', (y: Argv) =>
     y.option('field', { describe: 'Specific field (locations, industries, etc.)', type: 'string' })
      .option('q', { describe: 'Search query for options', type: 'string' }),

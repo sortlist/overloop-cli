@@ -226,6 +226,10 @@ export class OverloopAPI {
     return this.request(`/sourcings/${id}/clone`, { method: 'POST' });
   }
 
+  async estimateSourcing(data: { search_criteria: Record<string, any> }) {
+    return this.request('/sourcings/estimate', { method: 'POST', body: JSON.stringify(data) });
+  }
+
   async getSourcingSearchOptions(params: { field?: string; q?: string } = {}) {
     return this.request(`/sourcings/search_options${this.buildQuery(params)}`);
   }
