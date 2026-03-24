@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/overloop-cli.svg)](https://www.npmjs.com/package/overloop-cli) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> **Beta** — This CLI is currently in beta. Commands and options may change in future releases.
+
 **Sales automation CLI for developers and AI agents** — Manage prospects, campaigns, sourcings, and more from the terminal.
 
 The Overloop CLI provides a command-line interface to the Overloop API v2, enabling developers and AI agents to automate sales outreach workflows programmatically.
