@@ -203,43 +203,139 @@ overloop exclusion-list:create --value baddomain.com --item-type domain
 overloop exclusion-list:delete <id>
 ```
 
+## search_criteria Format Reference
+
+### Locations — MUST be objects
+
+Locations must be objects with `id`, `name`, and `type` fields. **Plain strings silently match nothing.**
+
+```
+Correct: {"id": 22, "name": "Belgium", "type": "Country"}
+Wrong:   "Belgium"                    ← silently matches nothing
+Wrong:   {"name": "Belgium"}          ← missing id and type, rejected
+```
+
+Valid `type` values: `Region`, `Country`, `State`, `City`.
+
+Always look up locations first:
+
+```bash
+overloop sourcings:search-options --field locations --q "Belgium"
+# Returns: [{"id": 22, "name": "Belgium", "type": "Country"}, {"id": 1376, "name": "Brussels-Capital Region", "type": "State"}, ...]
+```
+
+### Industries — MUST use API names, not LinkedIn names
+
+Industries must be objects with `id` and `name`. The API uses its own industry names, which differ from LinkedIn names.
+
+```
+Correct: {"id": 575, "name": "Information Technology"}
+Wrong:   "Information Technology and Services"    ← LinkedIn name, matches nothing
+Wrong:   {"name": "Information Technology"}       ← missing id, rejected
+```
+
+Common LinkedIn → API name mappings:
+
+| LinkedIn name | API name | ID |
+|---|---|---|
+| Information Technology and Services | Information Technology | 575 |
+| Financial Services | Accounting & Financial Services | 541 |
+| Management Consulting | Business Consulting | 552 |
+| Computer Software | Software Development | 4 |
+| Internet | Internet & Web Services | 577 |
+| Marketing and Advertising | Marketing & Advertising | 1 |
+| Telecommunications | Telecommunications | 614 |
+| Banking | Banking & Lending | 547 |
+
+Always look up industries:
+
+```bash
+overloop sourcings:search-options --field industries --q "Information"
+# Returns: [{"id": 575, "name": "Information Technology", "alternates": ["Information Technology and Services"]}, ...]
+```
+
+### Other search_criteria fields
+
+| Field | Format | Lookup |
+|---|---|---|
+| `job_titles` | `["CEO", "CTO"]` (free text) | No lookup needed |
+| `company_sizes` | `["1-10 employees"]` | `search-options --field company_sizes` |
+| `management_level` | `["C-Level", "Director"]` | `search-options --field management_levels` |
+| `departments` | `["Sales", "Marketing"]` | `search-options --field departments` |
+| `prospect_keywords` | `["saas", "ai"]` (free text) | No lookup needed |
+| `technologies` | `["React", "Python"]` | `search-options --field technologies` |
+
+## Message Personalization Settings
+
+When creating or updating campaigns, you can set `message_personalization_settings` and `pitch_settings` to control AI-generated messages.
+
+### message_personalization_settings
+
+| Field | Accepted values | Default |
+|---|---|---|
+| `language` | `english (United States)`, `english (United Kingdom)`, `french`, `spanish`, `german`, `dutch`, `portuguese (Brazil)`, `portuguese (Portugal)`, `danish`, `finnish`, `swedish`, `italian`, `norwegian`, `romanian`, `hebrew`, `turkish`, `polish` | `english (United States)` |
+| `formality` | `formal`, `friendly`, `neutral` | `friendly` |
+| `tone_of_voice` | `confident`, `persuasive`, `witty`, `straightforward`, `empathetic` | `persuasive` |
+| `length` | `short`, `medium`, `long` | `short` |
+
+### pitch_settings
+
+| Field | Description |
+|---|---|
+| `website_url` | Your company website |
+| `selling_description` | What you sell / your value proposition |
+| `pain_points` | Problems your product solves |
+| `benefits` | Key benefits for the prospect |
+| `proof_points` | Social proof, case studies, numbers |
+| `campaign_intent` | What you want from the prospect (e.g. "Book a demo") |
+
 ## Common Workflows
 
-### Create a full campaign with steps
+### End-to-end: source prospects → create campaign → enroll → activate
+
+```bash
+# 1. Look up location and industry IDs
+overloop sourcings:search-options --field locations --q "Belgium"
+overloop sourcings:search-options --field industries --q "Software"
+
+# 2. Estimate match count (no credits consumed)
+overloop sourcings:estimate --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}'
+
+# 3. Create the sourcing
+overloop sourcings:create --name "Belgian Tech CTOs" --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}' --sourcing-limit 200
+
+# 4. Create campaign with auto-enrollment linked to the sourcing
+overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --auto-enroll --sourcing-id <sourcing_id>
+
+# 5. Add steps to the campaign
+overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":2}'
+overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Quick question about {{company_name}}","content":"Hi {{first_name}},\n\nI noticed {{company_name}} is growing fast...","generate_with_ai":true}'
+overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":3}'
+overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Following up","content":"Hi {{first_name}}, just wanted to follow up...","generate_with_ai":true}'
+
+# 6. Start the sourcing (prospects will auto-enroll into the campaign)
+overloop sourcings:start <sourcing_id>
+
+# 7. Activate the campaign
+overloop campaigns:update <campaign_id> --status on
+```
+
+### Manual enrollment flow
 
 ```bash
 # 1. Create campaign
 overloop campaigns:create --name "Q1 Cold Outreach" --timezone "Europe/Brussels"
 
-# 2. Add a delay step
+# 2. Add steps
 overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":1}'
-
-# 3. Add an email step
 overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Quick question","content":"Hi {{first_name}},\n\nWould love to chat about...\n\nBest"}'
 
-# 4. Enroll prospects
+# 3. Enroll prospects (single or bulk)
 overloop enrollments:create --campaign <campaign_id> --prospect <prospect_id>
+overloop enrollments:bulk --campaign <campaign_id> --prospects "id1,id2,id3"
 
-# 5. Activate
+# 4. Activate
 overloop campaigns:update <campaign_id> --status on
-```
-
-### Source prospects and enroll
-
-```bash
-# Find location IDs first
-overloop sourcings:search-options --field locations --q "Belgium"
-# Returns: [{"id": 22, "name": "Belgium", "type": "Country"}, ...]
-
-# Estimate before creating (no credits used)
-overloop sourcings:estimate --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["11-50 employees","51-200 employees"]}'
-# Returns: { estimated_count: 1200, ... preview: [...] }
-
-# Create sourcing with object-format locations
-overloop sourcings:create --name "Belgian CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"company_sizes":["11-50 employees","51-200 employees"]}'
-
-# Start it
-overloop sourcings:start <id>
 ```
 
 ### Export prospect data
