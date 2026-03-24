@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/overloop-cli.svg)](https://www.npmjs.com/package/overloop-cli) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Beta** — This CLI is currently in beta. Commands and options may change in future releases.
+> ⚠️ **Beta Notice:** This CLI is currently in beta. APIs and tool interfaces may change between versions. Please report any issues on [GitHub](https://github.com/sortlist/overloop-cli/issues).
 
 **Sales automation CLI for developers and AI agents** — Manage prospects, campaigns, sourcings, and more from the terminal.
 
