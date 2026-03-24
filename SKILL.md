@@ -75,16 +75,30 @@ overloop lists:delete <id>
 
 ### Campaigns
 
+Two sourcing patterns are supported:
+
+**Pattern A — Standalone sourcing as trigger:** Create a sourcing separately, then reference it with `--sourcing-id` and `--auto-enroll`. The sourcing remains independent; the campaign only uses it as an enrollment trigger. `campaign.sourcing_id` is NOT set.
+
+**Pattern B — Embedded sourcing (preferred for new campaigns):** Pass `--search-criteria` (and optionally `--sourcing-limit`) directly to `campaigns:create`. The API creates a sourcing owned by the campaign. Auto-enrollment is enabled automatically. `campaign.sourcing_id` IS set.
+
 ```bash
 overloop campaigns:list [--filter '{"status":"on"}'] [--expand steps,sourcing]
 overloop campaigns:get <id> [--expand steps]
 overloop campaigns:create --name "Q1 Outreach" [--timezone "Etc/UTC"] [--sender-id ID]
-overloop campaigns:create --name "Q1" --auto-enroll --sourcing-id <id>  # auto-enroll sourced prospects
-overloop campaigns:create --name "Q1" --auto-enroll --auto-reenroll     # auto-enroll + re-enroll
+
+# Pattern A: use existing standalone sourcing as trigger
+overloop campaigns:create --name "Q1" --auto-enroll --sourcing-id <id>
+
+# Pattern B: create embedded sourcing with the campaign (preferred)
+overloop campaigns:create --name "Q1" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}]}' --sourcing-limit 100
+
+# Inline steps
 overloop campaigns:create --data '{"name":"Q1","steps":[{"type":"delay","config":{"days_delay":5}},{"type":"email","config":{"subject":"Hi","content":"Hello"}}]}'
+
 overloop campaigns:update <id> --status on
-overloop campaigns:update <id> --auto-enroll      # enable auto-enrollment
-overloop campaigns:update <id> --no-auto-enroll   # disable auto-enrollment
+overloop campaigns:update <id> --auto-enroll --sourcing-id <id>   # Pattern A on update
+overloop campaigns:update <id> --search-criteria '...'            # Pattern B on update
+overloop campaigns:update <id> --no-auto-enroll                   # disable auto-enrollment
 overloop campaigns:delete <id>
 ```
 
@@ -281,7 +295,9 @@ When creating or updating campaigns, you can set `message_personalization_settin
 
 ## Common Workflows
 
-### End-to-end: source prospects → create campaign → enroll → activate
+### Pattern B (preferred): embedded sourcing campaign
+
+Use this when creating a new campaign that should source its own prospects.
 
 ```bash
 # 1. Look up location and industry IDs
@@ -291,23 +307,34 @@ overloop sourcings:search-options --field industries --q "Software"
 # 2. Estimate match count (no credits consumed)
 overloop sourcings:estimate --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}'
 
-# 3. Create the sourcing
-overloop sourcings:create --name "Belgian Tech CTOs" --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}' --sourcing-limit 200
+# 3. Create campaign with embedded sourcing — auto-enrollment is enabled automatically
+overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}' --sourcing-limit 200
 
-# 4. Create campaign with auto-enrollment linked to the sourcing
-overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --auto-enroll --sourcing-id <sourcing_id>
-
-# 5. Add steps to the campaign
+# 4. Add steps to the campaign
 overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":2}'
 overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Quick question about {{company_name}}","content":"Hi {{first_name}},\n\nI noticed {{company_name}} is growing fast...","generate_with_ai":true}'
 overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":3}'
 overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Following up","content":"Hi {{first_name}}, just wanted to follow up...","generate_with_ai":true}'
 
-# 6. Start the sourcing (prospects will auto-enroll into the campaign)
+# 5. Start the embedded sourcing (get sourcing_id from the campaign response)
 overloop sourcings:start <sourcing_id>
 
-# 7. Activate the campaign
+# 6. Activate the campaign
 overloop campaigns:update <campaign_id> --status on
+```
+
+### Pattern A: standalone sourcing as trigger
+
+Use this when you have an existing sourcing you want to wire as an enrollment trigger for a campaign.
+
+```bash
+# 1. Create a standalone sourcing
+overloop sourcings:create --name "Belgian Tech CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}]}' --sourcing-limit 200
+
+# 2. Create campaign, linking the existing sourcing as trigger
+overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --auto-enroll --sourcing-id <sourcing_id>
+
+# 3. Add steps, start sourcing, activate campaign (same as Pattern B steps 4-6)
 ```
 
 ### Manual enrollment flow

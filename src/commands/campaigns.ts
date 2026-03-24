@@ -45,7 +45,11 @@ export async function getCampaign(args: { id: string; expand?: string }) {
   }
 }
 
-export async function createCampaign(args: { name: string; data?: string; timezone?: string; 'sender-id'?: string; 'sourcing-id'?: string; 'auto-enroll'?: boolean; 'auto-reenroll'?: boolean; steps?: string }) {
+export async function createCampaign(args: {
+  name: string; data?: string; timezone?: string; 'sender-id'?: string;
+  'sourcing-id'?: string; 'search-criteria'?: string; 'sourcing-limit'?: number;
+  'auto-enroll'?: boolean; 'auto-reenroll'?: boolean; steps?: string;
+}) {
   const api = new OverloopAPI(getConfig());
 
   if (!args.name && !args.data) {
@@ -63,8 +67,21 @@ export async function createCampaign(args: { name: string; data?: string; timezo
   if (args.name) body.name = args.name;
   if (args.timezone) body.timezone = args.timezone;
   if (args['sender-id']) body.sender_id = args['sender-id'];
-  if (args['sourcing-id']) body.sourcing_id = args['sourcing-id'];
-  if (args['auto-enroll']) body.only_allow_manual_enrollment = false;
+
+  if (args['search-criteria']) {
+    try { body.search_criteria = JSON.parse(args['search-criteria']); } catch {
+      console.error('Failed to parse --search-criteria JSON:', args['search-criteria']);
+      process.exit(1);
+    }
+    if (args['sourcing-limit']) body.sourcing_limit = args['sourcing-limit'];
+  } else if (args['sourcing-id']) {
+    body.sourcing_id = args['sourcing-id'];
+    if (args['auto-enroll']) body.only_allow_manual_enrollment = false;
+  }
+
+  if (args['auto-enroll'] && !args['sourcing-id'] && !args['search-criteria']) {
+    body.only_allow_manual_enrollment = false;
+  }
   if (args['auto-reenroll'] !== undefined) body.automatically_reenroll = args['auto-reenroll'];
   if (args.steps) {
     try { body.steps = JSON.parse(args.steps); } catch {
@@ -82,7 +99,12 @@ export async function createCampaign(args: { name: string; data?: string; timezo
   }
 }
 
-export async function updateCampaign(args: { id: string; name?: string; status?: string; 'sourcing-id'?: string; 'auto-enroll'?: boolean; 'no-auto-enroll'?: boolean; 'auto-reenroll'?: boolean; 'no-auto-reenroll'?: boolean; data?: string }) {
+export async function updateCampaign(args: {
+  id: string; name?: string; status?: string; 'sourcing-id'?: string;
+  'search-criteria'?: string; 'sourcing-limit'?: number;
+  'auto-enroll'?: boolean; 'no-auto-enroll'?: boolean;
+  'auto-reenroll'?: boolean; 'no-auto-reenroll'?: boolean; data?: string;
+}) {
   const api = new OverloopAPI(getConfig());
 
   if (!args.id) {
@@ -99,7 +121,17 @@ export async function updateCampaign(args: { id: string; name?: string; status?:
   }
   if (args.name) body.name = args.name;
   if (args.status) body.status = args.status;
-  if (args['sourcing-id']) body.sourcing_id = args['sourcing-id'];
+
+  if (args['search-criteria']) {
+    try { body.search_criteria = JSON.parse(args['search-criteria']); } catch {
+      console.error('Failed to parse --search-criteria JSON:', args['search-criteria']);
+      process.exit(1);
+    }
+    if (args['sourcing-limit']) body.sourcing_limit = args['sourcing-limit'];
+  } else if (args['sourcing-id']) {
+    body.sourcing_id = args['sourcing-id'];
+  }
+
   if (args['auto-enroll']) body.only_allow_manual_enrollment = false;
   if (args['no-auto-enroll']) body.only_allow_manual_enrollment = true;
   if (args['auto-reenroll'] !== undefined) body.automatically_reenroll = args['auto-reenroll'];
