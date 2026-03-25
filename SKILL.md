@@ -104,17 +104,113 @@ overloop campaigns:delete <id>
 
 ### Steps (campaign-scoped, require `--campaign` / `-c`)
 
-Available step types: `delay`, `email`, `condition`, `linkedin_visit_profile`, `linkedin_send_invitation`, `linkedin_send_message`, `linkedin_check_connection`, `email_and_linkedin_condition`, `add_to_tags`, `edit`, `note`, `review`, `enroll`, `enroll_campaign`, `goto_step`, `search_email`, `notification_email`, `notification_sms`, `notification_in_app`, `assign_conversation`, `archive_conversation`, `share`, `salesforce`, `hubspot`, `slack`, `pipedrive`, `zoho`, `reply`.
-
 ```bash
 overloop steps:list --campaign <id>
 overloop steps:get <step_id> --campaign <id>
-overloop steps:create --campaign <id> --type email --config '{"subject":"Hello","content":"Hi {{first_name}}"}'
+overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}'
 overloop steps:create --campaign <id> --type delay --config '{"days_delay":3}'
-overloop steps:create --campaign <id> --type condition --previous-step-id <id> --position 0 --config '{}'
+overloop steps:create --campaign <id> --type condition --previous-step-id <id> --position 0 --config '{"records_segment":{"filters":{}}}'
 overloop steps:update <step_id> --campaign <id> --config '{"subject":"Updated"}'
 overloop steps:delete <step_id> --campaign <id>
 ```
+
+#### Step Config Reference
+
+**Core steps (most commonly used):**
+
+| Step Type | Required Config | Example |
+|-----------|----------------|---------|
+| `delay` | `days_delay` (int) and/or `hours_delay` (int). Min 10 minutes. | `{"days_delay": 3}` |
+| `email` (AI) | `generate_with_ai: true` — AI writes subject+body using campaign pitch_settings | `{"generate_with_ai": true}` |
+| `email` (manual) | `subject` + `content` (Liquid templates) | `{"subject": "Hi {{ lead_firstname }}", "content": "Hello {{ lead_firstname }},\n\n..."}` |
+| `linkedin_visit_profile` | none | `{}` |
+| `linkedin_send_invitation` | none (optional `message`, max 300 chars) | `{"message": "Hi {{ lead_firstname }}, let's connect!"}` or `{}` |
+| `linkedin_send_message` (AI) | `generate_with_ai: true` or empty config (defaults to AI) | `{"generate_with_ai": true}` or `{}` |
+| `linkedin_send_message` (manual) | `message` (Liquid template) | `{"message": "Hi {{ lead_firstname }}, ..."}` |
+| `linkedin_check_connection` | none — branches: connected = yes (position 0), not connected = no (position 1) | `{}` |
+| `condition` | `records_segment` with `filters` | `{"records_segment": {"filters": {"groups": [...]}}}` |
+| `email_and_linkedin_condition` | none — branches based on whether prospect has LinkedIn | `{}` |
+
+**Action steps:**
+
+| Step Type | Required Config | Example |
+|-----------|----------------|---------|
+| `add_to_tags` | `tag_ids` (array of tag IDs) | `{"tag_ids": [123, 456]}` |
+| `review` | `title` (Liquid template) | `{"title": "Review {{ lead_firstname }}"}` |
+| `note` | `content` (Liquid template) | `{"content": "Contacted {{ lead_firstname }}"}` |
+| `search_email` | none | `{}` |
+| `assign_conversation` | `owner_id` (user ID) | `{"owner_id": 1547}` |
+| `archive_conversation` | none | `{}` |
+| `enroll_campaign` | `automation_id` (campaign ID to enroll into). Optional: `node_id`, `remove_from_original` | `{"automation_id": 42, "remove_from_original": true}` |
+| `goto_step` | `node_id` (step ID to jump to) | `{"node_id": "uuid-of-step"}` |
+
+**Notification steps:**
+
+| Step Type | Required Config | Example |
+|-----------|----------------|---------|
+| `notification_email` | `recipient_id` (user ID), `subject`, `content` | `{"recipient_id": 1547, "subject": "Alert", "content": "..."}` |
+| `notification_sms` | `recipient_id`, `content` | `{"recipient_id": 1547, "content": "..."}` |
+| `notification_in_app` | `recipient_id`, `content` | `{"recipient_id": 1547, "content": "..."}` |
+
+**Integration steps:**
+
+| Step Type | Required Config | Example |
+|-----------|----------------|---------|
+| `salesforce` | CRM-specific config | `{}` |
+| `hubspot` | CRM-specific config | `{}` |
+| `pipedrive` | CRM-specific config | `{}` |
+| `zoho` | CRM-specific config | `{}` |
+| `slack` | `slack_id` (channel), `content` | `{"slack_id": "C12345", "content": "..."}` |
+
+#### Branching (condition steps)
+
+Condition steps create branches. Child steps use `--position` to specify which branch:
+- `--position 0` = **yes** branch (condition met)
+- `--position 1` = **no** branch (condition not met)
+
+```bash
+# Create a condition step
+overloop steps:create --campaign <id> --type condition --config '{"records_segment":{"filters":{}}}'
+
+# Add step on yes branch
+overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}' --previous-step-id <condition_id> --position 0
+
+# Add step on no branch  
+overloop steps:create --campaign <id> --type linkedin_send_message --config '{"generate_with_ai":true}' --previous-step-id <condition_id> --position 1
+```
+
+#### AI-Generated Content (`generate_with_ai`)
+
+Supported on: `email`, `linkedin_send_message`, `linkedin_send_invitation`.
+
+When `generate_with_ai: true`:
+- Subject and content are generated at send time using the campaign's `pitch_settings` and `message_personalization_settings`.
+- First outreach gets a unique cold message; follow-ups get contextual follow-up messages.
+- You do NOT need to provide `subject`/`content`/`message` — they are generated automatically.
+- Step-level `message_personalization_settings` can override campaign defaults (e.g. different language for a specific step).
+
+**For AI to work well, ensure campaign `pitch_settings` are filled** (especially `selling_description` and `campaign_intent`).
+
+#### Merge Tags (Liquid Templates)
+
+Used in `subject`, `content`, and `message` fields for manual (non-AI) steps. Uses Liquid syntax.
+
+**Prospect:**
+`{{ lead_firstname }}`, `{{ lead_lastname }}`, `{{ lead_name }}`, `{{ lead_email }}`, `{{ lead_jobtitle }}`, `{{ lead_phone }}`, `{{ lead_city }}`, `{{ lead_company_name }}`, `{{ lead_linkedin_profile }}`
+
+Aliases: `{{ prospect_firstname }}`, `{{ prospect_lastname }}`, etc.
+
+**Organization:**
+`{{ organization_name }}`, `{{ organization_website }}`
+
+**Sender:**
+`{{ sender_name }}`, `{{ sender_firstname }}`, `{{ sender_lastname }}`, `{{ sender_email }}`, `{{ sender_phone }}`, `{{ sender_jobtitle }}`
+
+**Email threading:**
+`{{ thread_subject }}` — subject of the previous email in the thread (for follow-ups using `Re: {{ thread_subject }}`)
+
+**Custom fields:**
+`{{ lead_c_<field_code> }}`, `{{ organization_c_<field_code> }}`
 
 ### Enrollments (campaign-scoped, require `--campaign` / `-c`)
 
