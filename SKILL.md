@@ -389,6 +389,48 @@ When creating or updating campaigns, you can set `message_personalization_settin
 | `proof_points` | Social proof, case studies, numbers |
 | `campaign_intent` | What you want from the prospect (e.g. "Book a demo") |
 
+### Complete campaign creation example
+
+A single `--data` call that creates a fully configured campaign with AI steps, pitch settings, and personalization:
+
+```bash
+overloop campaigns:create --data '{
+  "name": "Acme // FR // CMOs // EN // v1-growth",
+  "sender_id": 1547,
+  "timezone": "Europe/Brussels",
+  "sending_days": ["monday","tuesday","wednesday","thursday","friday"],
+  "start_sending_minutes": 540,
+  "end_sending_minutes": 1020,
+  "pitch_settings": {
+    "website_url": "https://acme.com",
+    "selling_description": "Acme provides growth analytics for B2B SaaS companies.",
+    "pain_points": "- No visibility on pipeline velocity\n- Manual reporting wastes 10h/week",
+    "benefits": "- Real-time pipeline dashboard\n- AI-powered forecasting\n- Integrates with your CRM in 5 min",
+    "proof_points": "- 200+ B2B SaaS clients\n- 35% faster deal cycles on average",
+    "campaign_intent": "Book a 15-min demo"
+  },
+  "message_personalization_settings": {
+    "language": "english (United States)",
+    "formality": "friendly",
+    "tone_of_voice": "straightforward",
+    "length": "short"
+  },
+  "steps": [
+    {"type": "linkedin_visit_profile", "config": {}},
+    {"type": "delay", "config": {"hours_delay": 12}},
+    {"type": "linkedin_send_invitation", "config": {"generate_with_ai": true}},
+    {"type": "delay", "config": {"days_delay": 3}},
+    {"type": "email", "config": {"generate_with_ai": true}},
+    {"type": "delay", "config": {"days_delay": 5}},
+    {"type": "linkedin_send_message", "config": {"generate_with_ai": true}},
+    {"type": "delay", "config": {"days_delay": 10}},
+    {"type": "email", "config": {"generate_with_ai": true}}
+  ]
+}'
+```
+
+This creates a 9-step LinkedIn + email sequence where AI generates all messaging using the provided pitch context. The campaign is created in `off` status — activate with `campaigns:update <id> --status on` after enrolling prospects or linking a sourcing.
+
 ## Common Workflows
 
 ### Pattern B (preferred): embedded sourcing campaign
