@@ -543,8 +543,40 @@ overloop campaigns:get <id>
 - **401**: Invalid or missing API key.
 - **403**: Insufficient permissions or account restrictions.
 - **404**: Resource not found.
-- **422**: Validation error.
+- **422**: Validation error (see common errors below).
 - **429**: Rate limited (600 requests/minute per key).
+
+Error response format:
+
+```json
+{"error": {"type": "validation_error", "message": "Validation failed: Enter triggers can't be blank"}}
+```
+
+### Common Errors and Recovery
+
+**"Enter triggers can't be blank"**
+- Cause: Setting `only_allow_manual_enrollment: false` without a sourcing.
+- Fix: Use `--auto-enroll --sourcing-id <id>` or `--search-criteria '...'` to provide a sourcing. Never set `only_allow_manual_enrollment: false` without one.
+
+**"Auto-enrollment requires a sourcing_id or search_criteria"**
+- Cause: `--auto-enroll` flag without `--sourcing-id` or `--search-criteria`.
+- Fix: Create a sourcing first (`sourcings:create`), then pass `--sourcing-id`, or use `--search-criteria` for embedded sourcing.
+
+**"Validation failed" on search_criteria**
+- Cause: Locations passed as strings instead of objects, or invalid industry names.
+- Fix: Always use `sourcings:search-options` to look up correct `{id, name, type}` objects before creating sourcings.
+
+**"sourcing_limit: can't be blank"**
+- Cause: `sourcings:create` without `--sourcing-limit`.
+- Fix: Always pass `--sourcing-limit <number>` when creating a sourcing.
+
+**Campaign activated but not sending messages**
+- Cause: No sending address connected, or no prospects enrolled, or no messaging steps.
+- Fix: Run the pre-launch checklist above. Check `sending-addresses:list`, verify steps exist, and confirm prospects are enrolled or sourcing is active.
+
+**"Timezone can't be blank"**
+- Cause: Creating a campaign without a timezone (only happens with `--data` if timezone is omitted).
+- Fix: Include `"timezone": "Etc/UTC"` in the payload, or use `--timezone`. The CLI defaults to `Etc/UTC` when using flags.
 
 ## Environment Variables
 
