@@ -499,6 +499,41 @@ overloop campaigns:update <campaign_id> --status on
 overloop prospects:list --per-page 1000 | jq '.data[] | {email, first_name, last_name, company: .organization_name}'
 ```
 
+## Pre-Launch Checklist
+
+Before activating a campaign with `campaigns:update <id> --status on`, verify ALL of the following. Campaigns that fail these checks will silently do nothing.
+
+```bash
+# 1. At least one sending address connected?
+overloop sending-addresses:list
+# MUST return at least 1 address. If empty, the user needs to connect an email account in the Overloop UI.
+
+# 2. Campaign has messaging steps?
+overloop campaigns:get <id> --expand steps
+# MUST have at least 1 email or linkedin step. A campaign with only delays does nothing.
+
+# 3. Prospects will enter the campaign?
+# Option A: manual enrollment — at least 1 prospect enrolled
+overloop enrollments:list --campaign <id>
+# Option B: auto-enrollment — sourcing_id is set and sourcing is active
+overloop campaigns:get <id>
+# Check: only_allow_manual_enrollment = false AND sourcing_id is present
+
+# 4. Pitch settings filled? (only if steps use generate_with_ai)
+overloop campaigns:get <id>
+# Check: pitch_settings.selling_description is not empty.
+# If empty, update: overloop campaigns:update <id> --data '{"pitch_settings":{"selling_description":"...","campaign_intent":"..."}}'
+```
+
+**If a check fails:**
+
+| Check | Fix |
+|-------|-----|
+| No sending address | User must connect one in Overloop UI (Settings > Sending Addresses) |
+| No messaging steps | Add steps: `overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}'` |
+| No prospects enrolled | Enroll: `overloop enrollments:create --campaign <id> --prospect <id>` or link a sourcing |
+| Empty pitch_settings | Update: `overloop campaigns:update <id> --data '{"pitch_settings":{...}}'` |
+
 ## Error Handling
 
 - **Exit code 0**: Success. Output is JSON on stdout.
