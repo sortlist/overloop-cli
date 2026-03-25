@@ -65,6 +65,8 @@ overloop organizations:delete <id>
 
 ### Lists
 
+Lists are also used as tags in campaign steps. To use the `add_to_tags` step type, create lists first and pass their IDs as `tag_ids`.
+
 ```bash
 overloop lists:list [--search text]
 overloop lists:get <id>
@@ -135,7 +137,7 @@ overloop steps:delete <step_id> --campaign <id>
 
 | Step Type | Required Config | Example |
 |-----------|----------------|---------|
-| `add_to_tags` | `tag_ids` (array of tag IDs) | `{"tag_ids": [123, 456]}` |
+| `add_to_tags` | `tag_ids` (array of list IDs — use `lists:list` to find IDs) | `{"tag_ids": [123, 456]}` |
 | `review` | `title` (Liquid template) | `{"title": "Review {{ lead_firstname }}"}` |
 | `note` | `content` (Liquid template) | `{"content": "Contacted {{ lead_firstname }}"}` |
 | `search_email` | none | `{}` |
