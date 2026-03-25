@@ -146,6 +146,23 @@ export async function updateCampaign(args: {
   }
 }
 
+export async function getCampaignStats(args: { id: string }) {
+  const api = new OverloopAPI(getConfig());
+
+  if (!args.id) {
+    console.error('Campaign ID is required.');
+    process.exit(1);
+  }
+
+  try {
+    const result = await api.getCampaignStats(args.id);
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error: any) {
+    console.error('Failed to get campaign stats:', error.message);
+    process.exit(1);
+  }
+}
+
 export async function deleteCampaign(args: { id: string }) {
   const api = new OverloopAPI(getConfig());
 

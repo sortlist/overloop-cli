@@ -6,7 +6,7 @@ import { login, logout } from './commands/login';
 import { listProspects, getProspect, createProspect, updateProspect, deleteProspect } from './commands/prospects';
 import { listOrganizations, getOrganization, createOrganization, updateOrganization, deleteOrganization } from './commands/organizations';
 import { listLists, getList, createList, updateList, deleteList } from './commands/lists';
-import { listCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign } from './commands/campaigns';
+import { listCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign, getCampaignStats } from './commands/campaigns';
 import { listSteps, getStep, createStep, updateStep, deleteStep } from './commands/steps';
 import { listEnrollments, getEnrollment, createEnrollment, bulkCreateEnrollments, deleteEnrollment } from './commands/enrollments';
 import { listStepTypes } from './commands/step-types';
@@ -136,6 +136,9 @@ yargs(hideBin(process.argv))
   .command('campaigns:delete <id>', 'Delete a campaign', (y: Argv) =>
     y.positional('id', { describe: 'Campaign ID', type: 'string' }),
     deleteCampaign as any)
+  .command('campaigns:stats <id>', 'Get campaign performance stats', (y: Argv) =>
+    y.positional('id', { describe: 'Campaign ID', type: 'string' }),
+    getCampaignStats as any)
 
   // ── Steps (campaign-scoped) ──
 

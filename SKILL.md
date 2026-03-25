@@ -102,7 +102,20 @@ overloop campaigns:update <id> --auto-enroll --sourcing-id <id>   # Pattern A on
 overloop campaigns:update <id> --search-criteria '...'            # Pattern B on update
 overloop campaigns:update <id> --no-auto-enroll                   # disable auto-enrollment
 overloop campaigns:delete <id>
+overloop campaigns:stats <id>                                    # performance metrics
 ```
+
+#### Campaign Stats
+
+`campaigns:stats <id>` returns comprehensive performance metrics:
+- **prospects**: total, active, contacted counts
+- **enrollments**: active, completed, exited, errored, waiting, scheduled, in_review, disenrolled
+- **email**: sent, contacted, opened, clicked, replied, bounced, opted_out, open_rate, reply_rate, bounce_rate
+- **reply_sentiment**: positive, neutral, negative
+- **linkedin**: actions_performed, visited, messaged, invited, replied
+- **enrollment_sources**: overloop_database, event_trigger, linkedin_extension, existing_prospects, csv_import
+
+Rates are percentages (0-100). Metrics come from cached aggregation tables and may lag by a few minutes. Check `last_updated_at` for freshness.
 
 ### Steps (campaign-scoped, require `--campaign` / `-c`)
 

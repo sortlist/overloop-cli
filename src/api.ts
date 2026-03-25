@@ -146,6 +146,10 @@ export class OverloopAPI {
     return this.request(`/campaigns/${id}`, { method: 'DELETE' });
   }
 
+  async getCampaignStats(id: string) {
+    return this.request(`/campaigns/${id}/stats`);
+  }
+
   // -- Campaign Steps --
 
   async listSteps(campaignId: string, params: { page?: number; per_page?: number; sort?: string } = {}) {
