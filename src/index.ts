@@ -45,7 +45,10 @@ yargs(hideBin(process.argv))
 
   // ── Prospects ──
 
-  .command('prospects:list', 'List prospects', (y: Argv) => expandOption(paginationOptions(y)), listProspects as any)
+  .command('prospects:list', 'List prospects', (y: Argv) =>
+    expandOption(paginationOptions(y))
+      .option('sourcing-id', { describe: 'Filter by sourcing ID', type: 'string' }),
+    listProspects as any)
   .command('prospects:get <id>', 'Get a prospect by ID or email', (y: Argv) =>
     expandOption(y.positional('id', { describe: 'Prospect ID or email', type: 'string' })),
     getProspect as any)

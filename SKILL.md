@@ -43,7 +43,7 @@ overloop logout      # Remove saved credentials
 ### Prospects
 
 ```bash
-overloop prospects:list [--page N] [--per-page N] [--sort field] [--search text] [--filter '{"key":"value"}'] [--expand relations]
+overloop prospects:list [--page N] [--per-page N] [--sort field] [--search text] [--filter '{"key":"value"}'] [--expand relations] [--sourcing-id ID]
 overloop prospects:get <id>                  # ID or email
 overloop prospects:create --email john@example.com [--first-name John] [--last-name Doe] [--organization-id ID]
 overloop prospects:create --data '{"email":"john@example.com","first_name":"John","last_name":"Doe"}'
@@ -508,10 +508,18 @@ overloop enrollments:bulk --campaign <campaign_id> --prospects "id1,id2,id3"
 overloop campaigns:update <campaign_id> --status on
 ```
 
+### List prospects from a sourcing
+
+```bash
+overloop prospects:list --sourcing-id <sourcing-uuid>
+overloop prospects:list --sourcing-id <sourcing-uuid> --per-page 1000   # get up to 1000
+```
+
 ### Export prospect data
 
 ```bash
 overloop prospects:list --per-page 1000 | jq '.data[] | {email, first_name, last_name, company: .organization_name}'
+overloop prospects:list --sourcing-id <id> --per-page 1000 | jq '.data[] | {email, first_name, last_name}'
 ```
 
 ## Pre-Launch Checklist

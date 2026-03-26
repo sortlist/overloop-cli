@@ -1,7 +1,7 @@
 import { OverloopAPI } from '../api';
 import { getConfig } from '../config';
 
-export async function listProspects(args: { page?: number; 'per-page'?: number; sort?: string; search?: string; expand?: string; filter?: string }) {
+export async function listProspects(args: { page?: number; 'per-page'?: number; sort?: string; search?: string; expand?: string; filter?: string; 'sourcing-id'?: string }) {
   const api = new OverloopAPI(getConfig());
 
   let filter: Record<string, string> | undefined;
@@ -10,6 +10,10 @@ export async function listProspects(args: { page?: number; 'per-page'?: number; 
       console.error('Failed to parse --filter JSON:', args.filter);
       process.exit(1);
     }
+  }
+  if (args['sourcing-id']) {
+    filter = filter || {};
+    filter.sourcing_id = args['sourcing-id'];
   }
 
   try {
