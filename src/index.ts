@@ -15,6 +15,7 @@ import { listConversations, getConversation, updateConversation, archiveConversa
 import { getAccount, getMe } from './commands/account';
 import { listUsers, getUser } from './commands/users';
 import { listCustomFields } from './commands/custom-fields';
+import { listMergeTags } from './commands/merge-tags';
 import { listSendingAddresses } from './commands/sending-addresses';
 import { listExclusionList, createExclusionListItem, deleteExclusionListItem } from './commands/exclusion-list';
 
@@ -285,6 +286,12 @@ yargs(hideBin(process.argv))
   .command('custom-fields:list', 'List custom field definitions', (y: Argv) =>
     y.option('type', { describe: 'Filter by type (prospects)', type: 'string' }),
     listCustomFields as any)
+
+  // ── Merge Tags ──
+
+  .command('merge-tags:list', 'List available merge tags for email/LinkedIn templates', (y: Argv) =>
+    y.option('group', { describe: 'Filter by group (prospect, organization, sender, owner, company, campaign, condition, custom_field)', type: 'string' }),
+    listMergeTags as any)
 
   // ── Sending Addresses ──
 

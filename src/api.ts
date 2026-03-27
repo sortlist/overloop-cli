@@ -294,6 +294,12 @@ export class OverloopAPI {
     return this.request(`/custom_fields${this.buildQuery(params)}`);
   }
 
+  // -- Merge Tags --
+
+  async listMergeTags() {
+    return this.request('/merge_tags');
+  }
+
   // -- Sending Addresses --
 
   async listSendingAddresses() {

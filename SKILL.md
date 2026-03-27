@@ -210,22 +210,77 @@ When `generate_with_ai: true`:
 
 Used in `subject`, `content`, and `message` fields for manual (non-AI) steps. Uses Liquid syntax.
 
-**Prospect:**
-`{{ lead_firstname }}`, `{{ lead_lastname }}`, `{{ lead_name }}`, `{{ lead_email }}`, `{{ lead_jobtitle }}`, `{{ lead_phone }}`, `{{ lead_city }}`, `{{ lead_company_name }}`, `{{ lead_linkedin_profile }}`
+**Important:** Always use `| default: ''` for prospect/organization fields to avoid blank output when data is missing.
 
-Aliases: `{{ prospect_firstname }}`, `{{ prospect_lastname }}`, etc.
+To get the full list of available merge tags dynamically (including custom fields for the account):
+
+```bash
+overloop merge-tags:list                          # all tags
+overloop merge-tags:list --group prospect         # only prospect tags
+overloop merge-tags:list --group custom_field     # only custom field tags
+```
+
+**Prospect** (prefer `prospect_` prefix over `lead_` — both work):
+
+| Tag | Description |
+|-----|-------------|
+| `{{ prospect_firstname \| default: '' }}` | First name |
+| `{{ prospect_lastname \| default: '' }}` | Last name |
+| `{{ prospect_name \| default: '' }}` | Full name |
+| `{{ prospect_email \| default: '' }}` | Email address |
+| `{{ prospect_jobtitle \| default: '' }}` | Job title |
+| `{{ prospect_title \| default: '' }}` | Title (Mr, Mrs, etc.) |
+| `{{ prospect_phone \| default: '' }}` | Phone number |
+| `{{ prospect_company_name \| default: '' }}` | Organization name |
+| `{{ prospect_linkedin_profile \| default: '' }}` | LinkedIn profile URL |
+| `{{ prospect_country \| default: '' }}` | Country |
+| `{{ prospect_city \| default: '' }}` | City |
+| `{{ prospect_state \| default: '' }}` | State/region |
+| `{{ prospect_industry \| default: '' }}` | Industry |
 
 **Organization:**
-`{{ organization_name }}`, `{{ organization_website }}`
 
-**Sender:**
-`{{ sender_name }}`, `{{ sender_firstname }}`, `{{ sender_lastname }}`, `{{ sender_email }}`, `{{ sender_phone }}`, `{{ sender_jobtitle }}`
+| Tag | Description |
+|-----|-------------|
+| `{{ organization_name \| default: '' }}` | Organization name |
+| `{{ organization_website \| default: '' }}` | Website |
+| `{{ organization_country \| default: '' }}` | Country |
+| `{{ organization_city \| default: '' }}` | City |
+| `{{ organization_phone \| default: '' }}` | Phone |
 
-**Email threading:**
-`{{ thread_subject }}` — subject of the previous email in the thread (for follow-ups using `Re: {{ thread_subject }}`)
+**Sender** (campaign sender — no default needed, always set):
+
+| Tag | Description |
+|-----|-------------|
+| `{{ sender_name }}` | Sender's full name |
+| `{{ sender_firstname }}` | Sender's first name |
+| `{{ sender_lastname }}` | Sender's last name |
+| `{{ sender_email }}` | Sender's email |
+| `{{ sender_phone }}` | Sender's phone |
+| `{{ sender_company_name }}` | Sender's company name |
+
+**Owner** (prospect owner):
+`{{ owner_name }}`, `{{ owner_firstname }}`, `{{ owner_lastname }}`, `{{ owner_email }}`, `{{ owner_phone }}`
+
+**Company** (your account):
+`{{ company_name }}`, `{{ company_website }}`, `{{ company_phone }}`
+
+**Campaign & threading:**
+
+| Tag | Description |
+|-----|-------------|
+| `{{ automation_name }}` | Current campaign name |
+| `{{ thread_subject }}` | Previous email subject (for follow-ups: `Re: {{ thread_subject }}`) |
+
+**Conditions** (for conditional content with `{% if %}...{% endif %}`):
+`is_monday`, `is_tuesday`, `is_wednesday`, `is_thursday`, `is_friday`, `is_saturday`, `is_weekday`, `is_weekend`
+
+Example: `{% if is_monday %}Happy Monday!{% endif %}`
 
 **Custom fields:**
-`{{ lead_c_<field_code> }}`, `{{ organization_c_<field_code> }}`
+`{{ prospect_c_<field_code> | default: '' }}`, `{{ organization_c_<field_code> | default: '' }}`
+
+Use `overloop merge-tags:list --group custom_field` or `overloop custom-fields:list` to discover available codes.
 
 ### Enrollments (campaign-scoped, require `--campaign` / `-c`)
 
@@ -308,6 +363,16 @@ overloop me                   # Current authenticated user
 overloop users:list
 overloop users:get <id>
 ```
+
+### Merge Tags
+
+```bash
+overloop merge-tags:list                          # all available merge tags
+overloop merge-tags:list --group prospect         # filter by group
+overloop merge-tags:list --group custom_field     # custom fields for the account
+```
+
+Groups: `prospect`, `organization`, `sender`, `owner`, `company`, `campaign`, `thread`, `condition`, `custom_field`.
 
 ### Custom Fields
 
