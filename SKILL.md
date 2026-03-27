@@ -133,6 +133,8 @@ overloop steps:delete <step_id> --campaign <id>
 
 **Do not include a signature in any email or LinkedIn message template.** Overloop appends the sender's signature automatically.
 
+**Important:** For `linkedin_send_message` and `linkedin_send_invitation`, always use `message` as the field name, **not** `content`. The `content` field is only for `email` steps. Using `content` on LinkedIn steps will result in messages appearing empty in the Overloop UI.
+
 **Core steps (most commonly used):**
 
 | Step Type | Required Config | Example |
