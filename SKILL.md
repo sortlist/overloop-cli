@@ -131,6 +131,8 @@ overloop steps:delete <step_id> --campaign <id>
 
 #### Step Config Reference
 
+**Do not include a signature in any email or LinkedIn message template.** Overloop appends the sender's signature automatically.
+
 **Core steps (most commonly used):**
 
 | Step Type | Required Config | Example |
@@ -211,6 +213,8 @@ When `generate_with_ai: true`:
 Used in `subject`, `content`, and `message` fields for manual (non-AI) steps. Uses Liquid syntax.
 
 **Important:** Always use `| default: ''` for prospect/organization fields to avoid blank output when data is missing.
+
+**Never include a signature in email or LinkedIn message templates.** Overloop automatically appends the sender's signature (configured in Settings > Sending Addresses) to all outgoing messages. Adding a signature in the step content would result in a duplicate signature.
 
 To get the full list of available merge tags dynamically (including custom fields for the account):
 
