@@ -101,10 +101,19 @@ overloop campaigns:delete <id>
 
 ### Campaign Steps (require `--campaign`)
 
+> **Important:** When creating steps individually, you **must** chain each step to the previous one using `--previous-step-id`. Without chaining, steps will not appear in the Overloop UI. The recommended approach is to use inline steps with `campaigns:create --data '{"steps":[...]}'`.
+
 ```bash
 overloop steps:list --campaign <id>
 overloop steps:get <step_id> --campaign <id>
-overloop steps:create --campaign <id> --type email --config '{"subject":"Hello","content":"Hi there"}'
+
+# Preferred: inline steps in campaigns:create (chaining is automatic)
+overloop campaigns:create --data '{"name":"My Campaign","steps":[{"type":"delay","config":{"days_delay":1}},{"type":"email","config":{"generate_with_ai":true}}]}'
+
+# Individual creation — must chain with --previous-step-id
+STEP1=$(overloop steps:create --campaign <id> --type delay --config '{"days_delay":1}' | jq -r '.data.id')
+overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}' --previous-step-id $STEP1
+
 overloop steps:update <step_id> --campaign <id> --config '{"subject":"Updated"}'
 overloop steps:delete <step_id> --campaign <id>
 ```
@@ -211,17 +220,20 @@ overloop step-types:list | jq '.data[] | .type'
 ### Create a campaign with steps and enroll prospects
 
 ```bash
-# 1. Create the campaign
-overloop campaigns:create --name "Q1 Cold Outreach" --timezone "Europe/Brussels"
+# 1. Create the campaign with inline steps (preferred — chaining is automatic)
+overloop campaigns:create --data '{
+  "name": "Q1 Cold Outreach",
+  "timezone": "Europe/Brussels",
+  "steps": [
+    {"type": "delay", "config": {"days_delay": 1}},
+    {"type": "email", "config": {"subject": "Hello", "content": "Hi {{first_name}}"}}
+  ]
+}'
 
-# 2. Add steps (note the campaign ID from step 1)
-overloop steps:create --campaign <id> --type delay --config '{"days_delay":1}'
-overloop steps:create --campaign <id> --type email --config '{"subject":"Hello","content":"Hi {{first_name}}"}'
-
-# 3. Enroll a prospect
+# 2. Enroll a prospect
 overloop enrollments:create --campaign <id> --prospect <prospect_id>
 
-# 4. Activate the campaign
+# 3. Activate the campaign
 overloop campaigns:update <id> --status on
 ```
 

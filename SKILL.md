@@ -119,12 +119,22 @@ Rates are percentages (0-100). Metrics come from cached aggregation tables and m
 
 ### Steps (campaign-scoped, require `--campaign` / `-c`)
 
+**Critical: step chaining.** When creating steps individually (not inline via `campaigns:create --data`), you **must** chain each step to the previous one using `--previous-step-id`. Without it, steps are created as orphan root nodes and **will not appear in the Overloop UI sequence editor**. The recommended approach is to use inline steps with `campaigns:create --data '{"steps":[...]}'` which handles chaining automatically.
+
 ```bash
 overloop steps:list --campaign <id>
 overloop steps:get <step_id> --campaign <id>
-overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}'
-overloop steps:create --campaign <id> --type delay --config '{"days_delay":3}'
-overloop steps:create --campaign <id> --type condition --previous-step-id <id> --position 0 --config '{"records_segment":{"filters":{}}}'
+
+# Individual step creation — MUST chain with --previous-step-id
+STEP1=$(overloop steps:create --campaign <id> --type delay --config '{"days_delay":3}' | jq -r '.data.id')
+STEP2=$(overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}' --previous-step-id $STEP1 | jq -r '.data.id')
+overloop steps:create --campaign <id> --type delay --config '{"days_delay":5}' --previous-step-id $STEP2
+
+# Condition step — children use --position to select branch
+overloop steps:create --campaign <id> --type condition --previous-step-id <id> --config '{"records_segment":{"filters":{}}}'
+overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}' --previous-step-id <condition_id> --position 0  # yes branch
+overloop steps:create --campaign <id> --type linkedin_send_message --config '{"generate_with_ai":true}' --previous-step-id <condition_id> --position 1  # no branch
+
 overloop steps:update <step_id> --campaign <id> --config '{"subject":"Updated"}'
 overloop steps:delete <step_id> --campaign <id>
 ```
@@ -521,7 +531,7 @@ This creates a 9-step LinkedIn + email sequence where AI generates all messaging
 
 ### Pattern B (preferred): embedded sourcing campaign
 
-Use this when creating a new campaign that should source its own prospects.
+Use this when creating a new campaign that should source its own prospects. **Prefer inline steps** in `campaigns:create --data` to avoid step chaining issues.
 
 ```bash
 # 1. Look up location and industry IDs
@@ -531,51 +541,74 @@ overloop sourcings:search-options --field industries --q "Software"
 # 2. Estimate match count (no credits consumed)
 overloop sourcings:estimate --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}'
 
-# 3. Create campaign with embedded sourcing — auto-enrollment is enabled automatically
-overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --search-criteria '{"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]}' --sourcing-limit 200
+# 3. Create campaign with embedded sourcing AND inline steps (preferred — chaining is automatic)
+overloop campaigns:create --data '{
+  "name": "Q1 Tech Outreach",
+  "timezone": "Europe/Brussels",
+  "search_criteria": {"job_titles":["CTO","VP Engineering"],"locations":[{"id":22,"name":"Belgium","type":"Country"}],"industries":[{"id":4,"name":"Software Development"}],"company_sizes":["11-50 employees","51-200 employees"]},
+  "sourcing_limit": 200,
+  "steps": [
+    {"type": "delay", "config": {"days_delay": 2}},
+    {"type": "email", "config": {"generate_with_ai": true}},
+    {"type": "delay", "config": {"days_delay": 3}},
+    {"type": "email", "config": {"generate_with_ai": true}}
+  ]
+}'
 
-# 4. Add steps to the campaign
-overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":2}'
-overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Quick question about {{company_name}}","content":"Hi {{first_name}},\n\nI noticed {{company_name}} is growing fast...","generate_with_ai":true}'
-overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":3}'
-overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Following up","content":"Hi {{first_name}}, just wanted to follow up...","generate_with_ai":true}'
-
-# 5. Start the embedded sourcing (get sourcing_id from the campaign response)
+# 4. Start the embedded sourcing (get sourcing_id from the campaign response)
 overloop sourcings:start <sourcing_id>
 
-# 6. Activate the campaign
+# 5. Activate the campaign
 overloop campaigns:update <campaign_id> --status on
 ```
 
 ### Pattern A: standalone sourcing as trigger
 
-Use this when you have an existing sourcing you want to wire as an enrollment trigger for a campaign.
+Use this when you have an existing sourcing you want to wire as an enrollment trigger for a campaign. **Prefer inline steps** to avoid step chaining issues.
 
 ```bash
 # 1. Create a standalone sourcing
 overloop sourcings:create --name "Belgian Tech CTOs" --search-criteria '{"job_titles":["CTO"],"locations":[{"id":22,"name":"Belgium","type":"Country"}]}' --sourcing-limit 200
 
-# 2. Create campaign, linking the existing sourcing as trigger
-overloop campaigns:create --name "Q1 Tech Outreach" --timezone "Europe/Brussels" --auto-enroll --sourcing-id <sourcing_id>
+# 2. Create campaign with sourcing trigger AND inline steps
+overloop campaigns:create --data '{
+  "name": "Q1 Tech Outreach",
+  "timezone": "Europe/Brussels",
+  "only_allow_manual_enrollment": false,
+  "sourcing_id": "<sourcing_id>",
+  "steps": [
+    {"type": "delay", "config": {"days_delay": 1}},
+    {"type": "email", "config": {"generate_with_ai": true}},
+    {"type": "delay", "config": {"days_delay": 3}},
+    {"type": "email", "config": {"generate_with_ai": true}}
+  ]
+}'
 
-# 3. Add steps, start sourcing, activate campaign (same as Pattern B steps 4-6)
+# 3. Start sourcing, activate campaign
+overloop sourcings:start <sourcing_id>
+overloop campaigns:update <campaign_id> --status on
 ```
 
 ### Manual enrollment flow
 
+**Prefer inline steps** with `campaigns:create --data` for reliable step ordering:
+
 ```bash
-# 1. Create campaign
-overloop campaigns:create --name "Q1 Cold Outreach" --timezone "Europe/Brussels"
+# 1. Create campaign with inline steps
+overloop campaigns:create --data '{
+  "name": "Q1 Cold Outreach",
+  "timezone": "Europe/Brussels",
+  "steps": [
+    {"type": "delay", "config": {"days_delay": 1}},
+    {"type": "email", "config": {"subject": "Quick question", "content": "Hi {{first_name}},\n\nWould love to chat about...\n\nBest"}}
+  ]
+}'
 
-# 2. Add steps
-overloop steps:create --campaign <campaign_id> --type delay --config '{"days_delay":1}'
-overloop steps:create --campaign <campaign_id> --type email --config '{"subject":"Quick question","content":"Hi {{first_name}},\n\nWould love to chat about...\n\nBest"}'
-
-# 3. Enroll prospects (single or bulk)
+# 2. Enroll prospects (single or bulk)
 overloop enrollments:create --campaign <campaign_id> --prospect <prospect_id>
 overloop enrollments:bulk --campaign <campaign_id> --prospects "id1,id2,id3"
 
-# 4. Activate
+# 3. Activate
 overloop campaigns:update <campaign_id> --status on
 ```
 
@@ -624,7 +657,7 @@ overloop campaigns:get <id>
 | Check | Fix |
 |-------|-----|
 | No sending address | User must connect one in Overloop UI (Settings > Sending Addresses) |
-| No messaging steps | Add steps: `overloop steps:create --campaign <id> --type email --config '{"generate_with_ai":true}'` |
+| No messaging steps | Add steps using inline creation or chain with `--previous-step-id` (see Steps section) |
 | No prospects enrolled | Enroll: `overloop enrollments:create --campaign <id> --prospect <id>` or link a sourcing |
 | Empty pitch_settings | Update: `overloop campaigns:update <id> --data '{"pitch_settings":{...}}'` |
 
