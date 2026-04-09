@@ -1,0 +1,13 @@
+{
+  "name": "overloop",
+  "description": "Sales automation CLI — manage prospects, campaigns, enrollments, and sourcings via the Overloop API. Build and run outbound sequences from Claude Code.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Nicolas Finet",
+    "email": "nicolas@overloop.com"
+  },
+  "homepage": "https://overloop.com",
+  "repository": "https://github.com/sortlist/overloop-cli",
+  "license": "MIT",
+  "keywords": ["sales", "outbound", "crm", "email", "campaigns", "prospecting", "automation"]
+}
