@@ -145,7 +145,15 @@ overloop steps:delete <step_id> --campaign <id>
 
 **Important:** For `linkedin_send_message` and `linkedin_send_invitation`, always use `message` as the field name, **not** `content`. The `content` field is only for `email` steps. Using `content` on LinkedIn steps will result in messages appearing empty in the Overloop UI.
 
-**Core steps (most commonly used):**
+**A campaign accepts exactly the nine step types below.** The automation engine knows a wider
+vocabulary, but those extra types belong to workflows: a campaign cannot hold them, and the API
+rejects them with a `422 validation_error` naming the types you may use instead. `note`, `review`,
+`search_email`, `goto_step`, `assign_conversation`, `archive_conversation`, the `notification_*`
+steps, the Customer Relationship Management steps (`salesforce`, `hubspot`, `pipedrive`, `zoho`),
+`slack` and `email_and_linkedin_condition` are **not** campaign steps — do not build payloads with
+them. Run `overloop step-types:list` for the catalogue the API serves.
+
+**Core steps:**
 
 | Step Type | Required Config | Example |
 |-----------|----------------|---------|
@@ -158,38 +166,13 @@ overloop steps:delete <step_id> --campaign <id>
 | `linkedin_send_message` (manual) | `message` (Liquid template) | `{"message": "Hi {{ lead_firstname }}, ..."}` |
 | `linkedin_check_connection` | none — branches: connected = yes (position 0), not connected = no (position 1) | `{}` |
 | `condition` | `records_segment` with `filters` | `{"records_segment": {"filters": {"groups": [...]}}}` |
-| `email_and_linkedin_condition` | none — branches based on whether prospect has LinkedIn | `{}` |
 
 **Action steps:**
 
 | Step Type | Required Config | Example |
 |-----------|----------------|---------|
 | `add_to_tags` | `tag_ids` (array of list IDs — use `lists:list` to find IDs) | `{"tag_ids": [123, 456]}` |
-| `review` | `title` (Liquid template) | `{"title": "Review {{ lead_firstname }}"}` |
-| `note` | `content` (Liquid template) | `{"content": "Contacted {{ lead_firstname }}"}` |
-| `search_email` | none | `{}` |
-| `assign_conversation` | `owner_id` (user ID) | `{"owner_id": 1547}` |
-| `archive_conversation` | none | `{}` |
 | `enroll_campaign` | `automation_id` (campaign ID to enroll into). Optional: `node_id`, `remove_from_original` | `{"automation_id": 42, "remove_from_original": true}` |
-| `goto_step` | `node_id` (step ID to jump to) | `{"node_id": "uuid-of-step"}` |
-
-**Notification steps:**
-
-| Step Type | Required Config | Example |
-|-----------|----------------|---------|
-| `notification_email` | `recipient_id` (user ID), `subject`, `content` | `{"recipient_id": 1547, "subject": "Alert", "content": "..."}` |
-| `notification_sms` | `recipient_id`, `content` | `{"recipient_id": 1547, "content": "..."}` |
-| `notification_in_app` | `recipient_id`, `content` | `{"recipient_id": 1547, "content": "..."}` |
-
-**Integration steps:**
-
-| Step Type | Required Config | Example |
-|-----------|----------------|---------|
-| `salesforce` | CRM-specific config | `{}` |
-| `hubspot` | CRM-specific config | `{}` |
-| `pipedrive` | CRM-specific config | `{}` |
-| `zoho` | CRM-specific config | `{}` |
-| `slack` | `slack_id` (channel), `content` | `{"slack_id": "C12345", "content": "..."}` |
 
 #### Branching (condition steps)
 
@@ -312,8 +295,11 @@ overloop enrollments:delete <enrollment_id> --campaign <id>
 ### Step Types
 
 ```bash
-overloop step-types:list     # List all available step types
+overloop step-types:list     # The step types a campaign accepts, grouped, straight from the API
 ```
+
+This is the authoritative list: the API accepts exactly these types and refuses anything else
+with a 422. Prefer it over a hardcoded list when building a campaign programmatically.
 
 ### Sourcings
 
