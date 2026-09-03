@@ -103,7 +103,8 @@ export async function updateCampaign(args: {
   id: string; name?: string; status?: string; 'sourcing-id'?: string;
   'search-criteria'?: string; 'sourcing-limit'?: number;
   'auto-enroll'?: boolean; 'no-auto-enroll'?: boolean;
-  'auto-reenroll'?: boolean; 'no-auto-reenroll'?: boolean; data?: string;
+  'auto-reenroll'?: boolean; 'no-auto-reenroll'?: boolean;
+  'confirm-disenroll'?: boolean; data?: string;
 }) {
   const api = new OverloopAPI(getConfig());
 
@@ -136,6 +137,10 @@ export async function updateCampaign(args: {
   if (args['no-auto-enroll']) body.only_allow_manual_enrollment = true;
   if (args['auto-reenroll'] !== undefined) body.automatically_reenroll = args['auto-reenroll'];
   if (args['no-auto-reenroll']) body.automatically_reenroll = false;
+
+  // Replacing the steps of a campaign someone is enrolled in disenrolls them, so the API
+  // refuses it with a 422 unless the caller says so explicitly.
+  if (args['confirm-disenroll']) body.confirm_disenroll = true;
 
   try {
     const result = await api.updateCampaign(args.id, body);
