@@ -96,6 +96,9 @@ overloop campaigns:create --data '{"name":"Q1 Outreach","steps":[{"type":"delay"
 overloop campaigns:update <id> --status on
 overloop campaigns:update <id> --auto-enroll       # enable auto-enrollment
 overloop campaigns:update <id> --no-auto-enroll    # switch back to manual
+
+# Replacing the steps of a campaign prospects are enrolled in disenrolls them
+overloop campaigns:update <id> --data '{"steps":[...]}' --confirm-disenroll
 overloop campaigns:delete <id>
 ```
 

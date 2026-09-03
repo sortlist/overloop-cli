@@ -101,6 +101,9 @@ overloop campaigns:update <id> --status on
 overloop campaigns:update <id> --auto-enroll --sourcing-id <id>   # Pattern A on update
 overloop campaigns:update <id> --search-criteria '...'            # Pattern B on update
 overloop campaigns:update <id> --no-auto-enroll                   # disable auto-enrollment
+
+# Replacing the steps of a campaign prospects are enrolled in disenrolls them, so it needs consent
+overloop campaigns:update <id> --data '{"steps":[...]}' --confirm-disenroll
 overloop campaigns:delete <id>
 overloop campaigns:stats <id>                                    # performance metrics
 ```
@@ -614,7 +617,11 @@ overloop prospects:list --sourcing-id <id> --per-page 1000 | jq '.data[] | {emai
 
 ## Pre-Launch Checklist
 
-Before activating a campaign with `campaigns:update <id> --status on`, verify ALL of the following. Campaigns that fail these checks will silently do nothing.
+Before activating a campaign with `campaigns:update <id> --status on`, verify ALL of the following.
+
+Activation itself now fails loudly. `--status on` runs the same guards as the app and answers **422** with a code — `no_nodes`, `cannot_run_more_campaigns`, `subscription_cannot_use_outbound`, `subscription_cannot_use_linkedin_automation`, `automation_already_started` — or a validation error naming the step at fault (an email step with no subject, say). Surface that message to the user rather than reporting success.
+
+Only an empty sequence is refused outright. A campaign with no sending address, no prospects, or nothing but delays starts happily and then sends nothing — those are the ones this list is really for.
 
 ```bash
 # 1. At least one sending address connected?

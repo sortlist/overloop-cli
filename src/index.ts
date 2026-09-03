@@ -135,7 +135,11 @@ yargs(hideBin(process.argv))
       .option('auto-enroll', { describe: 'Enable automatic enrollment', type: 'boolean' })
       .option('no-auto-enroll', { describe: 'Disable automatic enrollment', type: 'boolean' })
       .option('auto-reenroll', { describe: 'Enable automatic re-enrollment', type: 'boolean' })
-      .option('no-auto-reenroll', { describe: 'Disable automatic re-enrollment', type: 'boolean' }),
+      .option('no-auto-reenroll', { describe: 'Disable automatic re-enrollment', type: 'boolean' })
+      .option('confirm-disenroll', {
+        describe: 'Required with --data \'{"steps":[...]}\' when prospects are enrolled: replacing the steps disenrolls them',
+        type: 'boolean'
+      }),
     updateCampaign as any)
   .command('campaigns:delete <id>', 'Delete a campaign', (y: Argv) =>
     y.positional('id', { describe: 'Campaign ID', type: 'string' }),
