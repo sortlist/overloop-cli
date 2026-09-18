@@ -1,30 +1,64 @@
+<div align="center">
+
 # Overloop CLI
 
-[![npm version](https://img.shields.io/npm/v/overloop-cli.svg)](https://www.npmjs.com/package/overloop-cli) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**The SDR your AI agents can hire.**
 
-> ⚠️ **Beta Notice:** This CLI is currently in beta. APIs and tool interfaces may change between versions. Please report any issues on [GitHub](https://github.com/sortlist/overloop-cli/issues).
+Source 450M+ contacts. Launch email + LinkedIn campaigns. Manage replies. All from the terminal.
 
-**Sales automation CLI for developers and AI agents** — Manage prospects, campaigns, sourcings, and more from the terminal.
+[![npm](https://img.shields.io/npm/v/overloop-cli)](https://www.npmjs.com/package/overloop-cli)
+[![npm downloads](https://img.shields.io/npm/dw/overloop-cli)](https://www.npmjs.com/package/overloop-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The Overloop CLI provides a command-line interface to the Overloop API v2, enabling developers and AI agents to automate sales outreach workflows programmatically.
+</div>
 
 ---
 
-## Installation
+## Quick Start
 
 ```bash
 npm install -g overloop-cli
+overloop login
+overloop sourcings:create --name "CTOs in Germany" --search-criteria '{"job_titles":["CTO"],"locations":[{"name":"Germany","type":"Country"}]}'
+overloop sourcings:start <id>
 ```
 
-### For AI Agents
+Three commands. Prospects in your pipeline.
 
-Install the Overloop skill for your AI agent (Cursor, Claude Code, etc.):
+## Why Overloop CLI
+
+- **CLI-first** -- built for terminals and AI agents, not browser tabs
+- **450M+ contacts** -- source prospects by title, location, company size, industry
+- **Multi-channel** -- email + LinkedIn sequences in one campaign
+- **JSON output** -- every command returns JSON, pipe to `jq` or feed to your agent
+- **$69-99/mo** -- not $5,000/mo like the enterprise tools
+
+## Works With
+
+Use as a standalone CLI or as a skill for your AI agent:
 
 ```bash
 npx skills add sortlist/overloop-cli
 ```
 
-This installs the SKILL.md which gives your agent full knowledge of the CLI commands, patterns, and workflows.
+Compatible with **Claude Code**, **Cursor**, **Gemini CLI**, **OpenCode**, **Codex**, and any agent that supports the Skills spec.
+
+## Signals + Overloop = Full Pipeline
+
+Pair with [Signals CLI](https://github.com/sortlist/signals-cli) for intent-driven outbound:
+
+```bash
+# 1. Detect who's hiring for sales roles (buying signal)
+signals leads:list --business 1 | jq '.leads[] | .payload.email'
+
+# 2. Add them to Overloop
+overloop prospects:create --email cto@acme.com --first-name John
+
+# 3. Enroll in your campaign
+overloop enrollments:create --campaign 1 --prospect <id>
+```
+
+Intent detected. Outreach launched. Pipeline built. Three CLI calls.
 
 ---
 
