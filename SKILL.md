@@ -111,14 +111,14 @@ overloop campaigns:stats <id>                                    # performance m
 #### Campaign Stats
 
 `campaigns:stats <id>` returns comprehensive performance metrics:
-- **prospects**: total, active, contacted counts
+- **prospects**: total, active, contacted, and the seven statuses every prospect of the campaign is in exactly one of: replied, exited, no_reply_yet, queued, to_review, unsubscribed, removed (they add up to total; active = no_reply_yet + queued + to_review, contacted = replied + exited + no_reply_yet + unsubscribed)
 - **enrollments**: active, completed, exited, errored, waiting, scheduled, in_review, disenrolled
 - **email**: sent, contacted, opened, clicked, replied, bounced, opted_out, open_rate, reply_rate, bounce_rate
 - **reply_sentiment**: positive, neutral, negative
 - **linkedin**: actions_performed, visited, messaged, invited, replied
 - **enrollment_sources**: overloop_database, event_trigger, linkedin_extension, existing_prospects, csv_import
 
-Rates are percentages (0-100). Metrics come from cached aggregation tables and may lag by a few minutes. Check `last_updated_at` for freshness.
+Rates are percentages (0-100). Metrics come from cached aggregation tables and may lag by a few minutes, except `prospects`, which is computed live from the campaign's audience. Check `last_updated_at` for freshness.
 
 ### Steps (campaign-scoped, require `--campaign` / `-c`)
 
